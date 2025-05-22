@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.wjh.mapper.AgentMapper">
+
+    <resultMap id="AgentResult" type="Agent">
+        <result property="id" column="id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="agentName" column="agent_name"/>
+        <result property="agentNo" column="agent_no"/>
+    </resultMap>
+
+    <sql id="selectAgentVo">
+        select
+            <trim prefix="" suffix="" suffixOverrides=",">
+                id,
+                create_time,
+                update_time,
+                agent_name,
+                agent_no,
+            </trim>
+        from agent
+    </sql>
+
+    <insert id="batchInsert">
+        insert into agent
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            create_time,
+            update_time,
+            agent_name,
+            agent_no,
+        </trim>
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                #{item.id},
+                #{item.createTime},
+                #{item.updateTime},
+                #{item.agentName},
+                #{item.agentNo},
+            </trim>
+        </foreach>
+    </insert>
+
+    <update id="batchUpdate">
+        <foreach collection="list" index="index" item="item">
+            update agent
+            <trim prefix="SET" suffixOverrides=",">
+                <if test="item.createTime != null ">create_time = #{item.createTime},</if>
+                <if test="item.updateTime != null ">update_time = #{item.updateTime},</if>
+                <if test="item.agentName != null  and item.agentName != ''">agent_name = #{item.agentName},</if>
+                <if test="item.agentNo != null  and item.agentNo != ''">agent_no = #{item.agentNo},</if>
+            </trim>
+            where id = #{item.id};
+        </foreach>
+    </update>
+
+    <delete id="batchDelete">
+        delete from agent where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")"> #{id} </foreach>
+    </delete>
+
+    <select id="batchSelect" resultMap="AgentResult">
+        <include refid="selectAgentVo"/>
+        where id in <foreach collection="list" separator="," item="id" open="(" close=")"> #{id} </foreach>
+        <if test="forUpdate"> FOR UPDATE </if>
+    </select>
+</mapper>

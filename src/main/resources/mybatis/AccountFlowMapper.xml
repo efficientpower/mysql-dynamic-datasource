@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.wjh.mapper.AccountFlowMapper">
+    <resultMap id="AccountFlowResult" type="AccountFlow">
+        <result property="id" column="id"/>
+        <result property="serialId" column="serial_id"/>
+        <result property="payee" column="payee"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectAccountFlowVo">
+        select
+            <trim prefix="" suffix="" suffixOverrides=",">
+                id,
+                serial_id,
+                payee,
+                create_time,
+                update_time,
+            </trim>
+        from account_flow
+    </sql>
+
+    <insert id="batchInsert" >
+        insert into account_flow
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                id,
+                serial_id,
+                payee,
+                create_time,
+                update_time,
+            </trim>
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                #{item.id},
+                #{item.serialId},
+                #{item.payee},
+                #{item.createTime},
+                #{item.updateTime},
+            </trim>
+        </foreach>
+    </insert>
+
+    <update id="batchUpdate">
+        <foreach collection="list" index="index" item="item">
+            update account_flow
+            <trim prefix="SET" suffixOverrides=",">
+                <if test="item.serialId != null  and item.serialId != ''">serial_id = #{item.serialId},</if>
+                <if test="item.payee != null  and item.payee != ''">payee = #{item.payee},</if>
+                <if test="item.createTime != null ">create_time = #{item.createTime},</if>
+                <if test="item.updateTime != null ">update_time = #{item.updateTime},</if>
+            </trim>
+            where id = #{item.id};
+        </foreach>
+    </update>
+
+    <delete id="batchDelete">
+        delete from account_flow where id in
+        <foreach collection="list" item="id" open="(" separator="," close=")"> #{id} </foreach>
+    </delete>
+
+    <select id="batchSelect" resultMap="AccountFlowResult">
+        <include refid="selectAccountFlowVo"/>
+        where id in <foreach collection="list" separator="," item="id" open="(" close=")"> #{id} </foreach>
+        <if test="forUpdate"> FOR UPDATE </if>
+    </select>
+</mapper>
